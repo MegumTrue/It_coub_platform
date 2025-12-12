@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ваш финансовый помощник</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0d2b1e 0%, #1a3d2f 100%);
+            color: #e6e6e6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* ШАПКА - ОТДЕЛЬНЫЙ ЭЛЕМЕНТ */
+        .page-header {
+            background: rgba(13, 43, 30, 0.95);
+            border-bottom: 1px solid rgba(86, 180, 132, 0.3);
+            padding: 15px 0;
+            text-align: center;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #56b484 0%, #21a038 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            color: #a0c0c0;
+            font-size: 0.9rem;
+        }
+        
+        /* ОСНОВНОЙ КОНТЕЙНЕР ЧАТА - ТОЛЬКО СООБЩЕНИЯ */
+        .chat-main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .top-controls {
+            padding: 10px 15px;
+            background: rgba(13, 43, 30, 0.8);
+            border-bottom: 1px solid rgba(86, 180, 132, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 900;
+        }
+
+        .left-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .right-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-btn {
+            background: rgba(33, 80, 60, 0.9);
+            border: 1px solid rgba(86, 180, 132, 0.3);
+            color: #e6e6e6;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .auth-btn:hover {
+            background: rgba(40, 100, 75, 0.9);
+            transform: scale(1.05);
+        }
+
+        .notification-btn, .menu-btn-header {
+            background: rgba(33, 80, 60, 0.9);
+            border: 1px solid rgba(86, 180, 132, 0.3);
+            color: #e6e6e6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .notification-btn:hover, .menu-btn-header:hover {
+            background: rgba(40, 100, 75, 0.9);
+            transform: scale(1.05);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* ОБЛАСТЬ СООБЩЕНИЙ - ОСНОВНОЙ КОНТЕНТ */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 65, 50, 0.8);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.4;
+            position: relative;
+        }
+        
+        .tabbed {
+            display: block;
+            margin-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 2px solid rgba(86, 180, 132, 0.3);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #1e6b3a 0%, #21a038 100%);
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(40, 85, 65, 0.9);
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(86, 180, 132, 0.1);
+        }
+        
+        .message-time {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .message strong {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .message .tabbed {
+            display: block;
+            margin-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 2px solid rgba(86, 180, 132, 0.3);
+            color: #c8e6c9;
+            line-height: 1.4;
+        }
+
+        .bot-message .tabbed {
+            color: #e6e6e6;
+        }
+
+        .chat-messages .message .tabbed {
+            display: block !important;
+        }
+        
+        .message a {
+            color: #56b484;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        .message a:hover {
+            color: #86d4a8;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            color: #86b484;
+            font-size: 1rem;
+            width: 100%;
+            display: block;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
+        
+        .collapsible {
+            margin: 0px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(86, 180, 132, 0.2);
+        }
+
+        .collapsible-header {
+            background: rgba(33, 80, 60, 0.7);
+            padding: 8px 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s ease;
+            min-height: 25px;
+            height: auto;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(40, 100, 75, 0.8);
+        }
+
+        .collapsible-title {
+            font-weight: 600;
+            color: #86d4a8;
+            font-size: 1.1rem;
+            line-height: 1.1;
+            white-space: normal;
+            overflow: visible;
+            word-wrap: break-word;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+            color: #56b484;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .collapsible.expanded .collapsible-icon {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(26, 60, 45, 0.5);
+        }
+
+        .collapsible.expanded .collapsible-content {
+            max-height: 1000px;
+        }
+
+        .collapsible-list {
+            padding: 10px 15px;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .collapsible-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(86, 180, 132, 0.1);
+        }
+
+        .collapsible-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Кнопки */
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0px 10px 5px 10px;
+            padding: 0;
+            background: transparent;
+        }
+        
+        .action-button {
+            background: rgba(42, 116, 133, 0.44);
+            border: 1px solid rgba(86, 180, 132, 0.4);
+            color: #e6e6e6;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            text-align: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+        
+        .action-button:hover {
+            background: rgba(48, 131, 149, 0.44);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(86, 180, 169, 0.3);
+        }
+
+        /* ПОЛЕ ВВОДА - ОТДЕЛЬНЫЙ ЭЛЕМЕНТ */
+        .input-area {
+            display: flex;
+            padding: 12px;
+            background: rgba(26, 61, 47, 0.8);
+            border-top: 1px solid rgba(86, 180, 132, 0.3);
+            align-items: flex-end;
+            flex-shrink: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .send-btn {
+            background: linear-gradient(135deg, rgba(30, 107, 58, 0.8) 0%, rgba(33, 160, 56, 0.8) 100%);
+            border: none;
+            color: white;
+            padding: 0 20px;
+            margin-left: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            font-size: 0.9rem;
+            height: 40px;
+            flex-shrink: 0;
+            margin-right: 10px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(40, 85, 65, 0.9);
+            color: #e6e6e6;
+            font-size: 0.9rem;
+            outline: none;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+            overflow-y: auto;
+            line-height: 1.4;
+            font-family: inherit;
+            margin: 0 10px;
+        }
+        
+        .message-input:focus {
+            box-shadow: 0 0 0 2px rgba(86, 180, 132, 0.3);
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 2px 10px rgba(86, 180, 132, 0.3);
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: rgba(40, 85, 65, 0.9);
+            padding: 10px 15px;
+            border-radius: 15px;
+            border-bottom-left-radius: 5px;
+            margin-bottom: 8px;
+            margin-left: 10px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #a0c0c0;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .loader {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 10px auto;
+            border: 4px solid rgba(86, 180, 132, 0.2);
+            border-top: 4px solid #56b484;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Модальные окна и панели */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 65, 50, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            width: 380px;
+            max-width: 90%;
+            border: 1px solid rgba(86, 180, 132, 0.2);
+        }
+        
+        .modal-content h3 {
+            color: #56b484;
+            margin-bottom: 10px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 8px 10px;
+            margin: 8px 0;
+            background: rgba(40, 85, 65, 0.9);
+            border: 1px solid rgba(86, 180, 132, 0.2);
+            border-radius: 5px;
+            color: #e6e6e6;
+            font-size: 0.9rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .modal-buttons button {
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-buttons button:first-child {
+            background: rgba(70, 70, 70, 0.7);
+            border: 1px solid rgba(100, 100, 100, 0.3);
+            color: #e6e6e6;
+        }
+        
+        .modal-buttons button:last-child {
+            background: rgba(33, 160, 56, 0.7);
+            border: 1px solid rgba(86, 180, 132, 0.3);
+            color: white;
+        }
+
+        .notification-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(30, 65, 50, 0.98);
+            border-left: 1px solid rgba(86, 180, 132, 0.3);
+            transition: right 0.3s ease;
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-panel.open {
+            right: 0;
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(86, 180, 132, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            color: #56b484;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .close-notifications {
+            background: none;
+            border: none;
+            color: #e6e6e6;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(40, 85, 65, 0.9);
+            border-radius: 8px;
+            border: 1px solid rgba(86, 180, 132, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background: rgba(40, 100, 75, 0.9);
+            transform: translateX(-2px);
+        }
+
+        .notification-item.unread {
+            border-left: 3px solid #56b484;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            color: #86d4a8;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .notification-message {
+            color: #e6e6e6;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            margin-bottom: 5px;
+        }
+
+        .notification-date {
+            color: #a0c0c0;
+            font-size: 0.7rem;
+            text-align: right;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .no-notifications {
+            text-align: center;
+            color: #a0c0c0;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        #accountConfirmationModal .modal-content {
+            text-align: center;
+        }
+
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 10px 5px 10px;
+            padding: 0;
+            background: transparent;
+            justify-content: flex-start;
+        }
+
+        .action-button {
+            background: rgba(42, 116, 133, 0.44);
+            border: 1px solid rgba(86, 180, 132, 0.4);
+            color: #e6e6e6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            text-align: center;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            background: rgba(48, 131, 149, 0.44);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(86, 180, 169, 0.3);
+        }
+
+        .account-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #56b484;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(40, 85, 65, 0.9);
+            border-radius: 8px;
+            border: 1px solid rgba(86, 180, 132, 0.3);
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(30, 65, 50, 0.98);
+            border-right: 1px solid rgba(86, 180, 132, 0.3);
+            transition: left 0.3s ease;
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-panel.open {
+            left: 0;
+        }
+
+        .menu-header {
+            padding: 15px;
+            border-bottom: 1px solid rgba(86, 180, 132, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-header h3 {
+            color: #56b484;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            color: #e6e6e6;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            background: rgba(33, 80, 60, 0.9);
+            border: 1px solid rgba(86, 180, 132, 0.3);
+            color: #e6e6e6;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn:hover {
+            background: rgba(40, 100, 75, 0.9);
+            transform: translateX(5px);
+        }
+
+        .menu-btn-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Мобильная версия */
+        @media (max-width: 768px) {
+            .buttons-container {
+                margin: 10px 5px 5px 5px;
+                gap: 6px;
+            }
+            
+            .action-button {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+                width: 100%;
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .buttons-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .buttons-container .action-button {
+                flex: 1 1 calc(50% - 3px);
+                min-width: calc(50% - 3px);
+                max-width: calc(50% - 3px);
+            }
+            
+            .page-header {
+                height: 70px;
+                padding: 10px 0;
+            }
+            
+            .header-title {
+                font-size: 1.3rem;
+            }
+            
+            .subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .top-controls {
+                padding: 8px 10px;
+            }
+            
+            .auth-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .notification-btn, .menu-btn-header {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .notification-panel, .menu-panel {
+                width: 280px;
+            }
+            
+            .chat-messages {
+                padding: 10px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .input-area {
+                padding: 10px;
+            }
+            
+            .message-input {
+                font-size: 0.85rem;
+                margin: 0 5px;
+            }
+            
+            .send-btn {
+                padding: 0 15px;
+                font-size: 0.85rem;
+                margin-right: 5px;
+            }
+            
+            .typing-indicator {
+                margin-left: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ШАПКА - ОТДЕЛЬНЫЙ ЭЛЕМЕНТ -->
+    <header class="page-header">
+        <div class="header-title">Агент финоздоровление</div>
+        <div class="subtitle">Ваш финансовый помощник | Интеграция с GigaChat</div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
+    <main class="chat-main-container">
+        <!-- Панель управления -->
+        <div class="top-controls">
+            <div class="left-controls">
+                <button class="menu-btn-header" id="menuBtn">☰</button>
+            </div>
+            <div class="right-controls">
+                <button class="auth-btn" onclick="openUserSelectionModal()">👤 Авторизация</button>
+                <button class="notification-btn" id="notificationBtn">
+                    🔔
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Область сообщений -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    Здравствуйте! Я помощник по финансовому оздоровлению.<br>
+                    Помогу найти работу, улучшить финансовое положение, научу управлять деньгами.<br>
+                    Выберите нужную функцию в меню или напишите вопрос
+                    <div class="message-time" id="initialTime">Только что</div>
+                </div>
+                
+                <!-- Блок кнопок -->
+                <div class="buttons-container" id="initialButtons">
+                    <button class="action-button" onclick="showFinancialTopic(6)">🏢 Центр занятости</button>
+                    <button class="action-button" onclick="startResumeCreation()">📝 Резюме</button>
+                    <button class="action-button" onclick="startJobSearch()">🔍 Поиск работы</button>
+                    <button class="action-button" onclick="startInterviewPrep()">💼 Собеседование</button>
+                    <button class="action-button" onclick="showFinancialTopic(1)">💼 Самозанятость</button>
+                    <button class="action-button" onclick="showFinancialTopic(2)">📄 Соц. контракт</button>
+                    <button class="action-button" onclick="showFinancialTopic(14)">🧾 Налоговый вычет</button>
+                    <button class="action-button" onclick="startFinancialAnalysis()">🕶️ Анализ</button>
+                    <button class="action-button" onclick="showAboutBot()">🤖 О боте</button>
+                </div>
+            </div>
+            
+            <div class="loader" id="loader"></div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ПОЛЕ ВВОДА - ОТДЕЛЬНЫЙ ЭЛЕМЕНТ -->
+    <footer class="input-area">
+        <textarea class="message-input" id="userInput" placeholder="Введите ваш вопрос..." onkeypress="handleKeyPress(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">Отправить</button>
+    </footer>
+
+    <!-- Вспомогательные панели -->
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-header">
+            <h3>Меню функций</h3>
+            <button class="close-menu" id="closeMenu">×</button>
+        </div>
+        <div class="menu-content" id="menuContent"></div>
+    </div>
+
+    <div class="notification-panel" id="notificationPanel">
+        <div class="notification-header">
+            <h3>Уведомления</h3>
+            <button class="close-notifications" id="closeNotifications">×</button>
+        </div>
+        <div class="notification-list" id="notificationList"></div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    
+    <div id="userSelectionModal" class="modal">
+        <div class="modal-content">
+            <h3>Авторизация по SberID</h3>
+            <p>Выберите пользователя из спика:</p>
+            <select class="modal-input" id="userSelectModal">
+                <option value="Без аккаунта">Без аккаунта</option>
+                <option value="10022136282">10022136282</option>
+                <option value="67651241646">67651241646</option>
+                <option value="14668188501">14668188501</option>
+                <option value="27577193111">27577193111</option>
+            </select>
+            <div class="modal-buttons">
+                <button onclick="closeModal('userSelectionModal')">Отмена</button>
+                <button onclick="selectUserFromModal()">Выбрать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="accountConfirmationModal" class="modal">
+        <div class="modal-content">
+            <h3>Аккаунт подтвержден</h3>
+            <p>Ваш аккаунт успешно привязан:</p>
+            <div class="account-number" id="confirmedAccountNumber"></div>
+            <p>Теперь вы можете пользоваться всеми функциями помощника</p>
+            <div class="modal-buttons">
+                <button onclick="closeModal('accountConfirmationModal')">Продолжить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = 'Без аккаунта';
+        
+        document.getElementById('initialTime').textContent = new Date().toLocaleTimeString([], { 
+            hour: '2-digit', minute: '2-digit' 
+        });
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        const userInput = document.getElementById('userInput');
+        userInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+        
+        // Система заготовок кнопок
+        const buttonTemplates = {
+            // Финансовые кнопки
+            financial_analysis: {
+                text: "💰 Финансовый анализ",
+                action: "startFinancialAnalysis()",
+                style: "financial"
+            },
+            payment_info: {
+                text: "💳 Инфо о платежах", 
+                action: "sendPaymentInfoRequest()",
+                style: "financial"
+            },
+            balance: {
+                text: "📊 Баланс",
+                action: "sendBalanceRequest()",
+                style: "financial"
+            },
+            
+            // Работа и карьера
+            resume: {
+                text: "📝 Создать резюме",
+                action: "startResumeCreation()",
+                style: "career"
+            },
+            job_search: {
+                text: "🔍 Поиск работы",
+                action: "startJobSearch()", 
+                style: "career"
+            },
+            interview: {
+                text: "💼 Подготовка к собеседованию",
+                action: "startInterviewPrep()",
+                style: "career"
+            },
+            
+            // Государственные услуги
+            employment_center: {
+                text: "🏢 Центр занятости",
+                action: "showFinancialTopic(6)",
+                style: "government"
+            },
+            self_employment: {
+                text: "💼 Самозанятость",
+                action: "showFinancialTopic(1)",
+                style: "government" 
+            },
+            social_contract: {
+                text: "📄 Соц. контракт",
+                action: "showFinancialTopic(2)",
+                style: "government"
+            },
+            tax_deduction: {
+                text: "🧾 Налоговый вычет",
+                action: "showFinancialTopic(14)",
+                style: "government"
+            },
+            
+            // Общие
+            about: {
+                text: "🤖 О боте",
+                action: "showAboutBot()",
+                style: "general"
+            }
+        };
+
+        // Группы кнопок для разных ситуаций
+        const buttonGroups = {
+            financial: ['financial_analysis', 'payment_info', 'balance', 'self_employment', 'social_contract', 'tax_deduction'],
+            career: ['resume', 'job_search', 'interview', 'employment_center'],
+            government: ['employment_center', 'self_employment', 'social_contract', 'tax_deduction'],
+            default: ['resume', 'job_search', 'interview', 'financial_analysis'],
+            initial: ['employment_center', 'resume', 'job_search', 'interview', 'self_employment', 'social_contract', 'tax_deduction', 'financial_analysis', 'about']
+        };
+
+        // Функция для получения кнопок по группе
+        function getButtonsByGroup(groupName) {
+            return buttonGroups[groupName]?.map(buttonId => buttonTemplates[buttonId]) || [];
+        }
+
+        // Функция для получения кнопок по массиву ID
+        function getButtonsByIds(buttonIds) {
+            return buttonIds.map(id => buttonTemplates[id]).filter(button => button);
+        }
+
+        function handleModalKeyPress(event, modalType) {
+            if (event.key === 'Enter') {
+                if (modalType === 'userSelectionModal') {
+                    selectUserFromModal();
+                }
+            }
+        }
+        
+        function openUserSelectionModal() {
+            document.getElementById('userSelectionModal').style.display = 'block';
+            document.getElementById('userSelectModal').value = currentUser;
+            document.getElementById('userSelectModal').focus();
+        }
+        
+        function selectUserFromModal() {
+            const select = document.getElementById('userSelectModal');
+            currentUser = select.value;
+            
+            fetch('/api/select-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: currentUser })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeModal('userSelectionModal');
+                    showAccountConfirmation(currentUser);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка выбора пользователя:', error);
+                closeModal('userSelectionModal');
+                showAccountConfirmation(currentUser);
+            });
+        }
+
+        // УПРОЩЕННАЯ И НАДЕЖНАЯ ФУНКЦИЯ ПРОКРУТКИ
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            // Простая и надежная прокрутка
+            const scroll = () => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+            
+            // Немедленная прокрутка
+            scroll();
+            
+            // Дополнительные попытки с задержками
+            setTimeout(scroll, 10);
+            setTimeout(scroll, 100);
+            setTimeout(scroll, 200);
+        }
+   
+        function showAccountConfirmation(accountNumber) {
+            document.getElementById('confirmedAccountNumber').textContent = accountNumber;
+            document.getElementById('accountConfirmationModal').style.display = 'block';
+        }
+        
+        function formatText(text) {
+            // Проверяем, что text является строкой
+            if (typeof text !== 'string') {
+                console.error('formatText: text is not a string:', text);
+                return String(text); // Преобразуем в строку
+            }
+            
+            let formattedText = text;
+            
+            formattedText = formattedText.replace(/^#{1,}\s+(.*$)/gm, '<span class="tabbed">$1</span>');
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/<a href=/g, '<a target="_blank" href=');
+            formattedText = formattedText.replace(/Основные (виды|этапы|преимущества):/g, '<div class="section-title">$&</div>');
+            formattedText = formattedText.replace(/Кто имеет право|Какие документы необходимы|Как оформить статус|Полезные интернет-ресурсы/g, '<div class="section-title">$&</div>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            
+            return formattedText;
+        }
+        
+        function createCollapsible(title, content) {
+            if (title.includes('<div class="section-title">')) {
+                return `<div class="collapsible"><div class="collapsible-header"><span class="collapsible-title">${title}</span><span class="collapsible-icon">▼</span></div><div class="collapsible-content"><div class="collapsible-list">${content}</div></div></div>`;
+            } else {
+                return `<div class="collapsible"><div class="collapsible-header"><span class="collapsible-title">${title}</span><span class="collapsible-icon">▼</span></div><div class="collapsible-content"><div class="collapsible-list">${content}</div></div></div>`;
+            }
+        }
+        
+        function initCollapsibles() {
+            const collapsibles = document.querySelectorAll('.collapsible');
+            collapsibles.forEach(collapsible => {
+                const header = collapsible.querySelector('.collapsible-header');
+                header.addEventListener('click', () => {
+                    collapsible.classList.toggle('expanded');
+                });
+            });
+        }
+        
+        function addButtonsAfterMessage(buttons) {
+            const chatMessages = document.getElementById('chatMessages');
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'buttons-container';
+            
+            if (buttons && buttons.length > 0) {
+                console.log('Добавляем кнопки:', buttons);
+                
+                buttons.forEach(button => {
+                    const btn = document.createElement('button');
+                    btn.className = 'action-button';
+                    
+                    // Используем заготовку если передан ID, иначе обычную кнопку
+                    let buttonConfig;
+                    if (typeof button === 'string') {
+                        // Если передана строка - это ID кнопки из заготовок
+                        buttonConfig = buttonTemplates[button];
+                    } else {
+                        // Если передан объект - используем его
+                        buttonConfig = button;
+                    }
+                    
+                    if (buttonConfig) {
+                        btn.textContent = buttonConfig.text;
+                        
+                        // Применяем стиль если есть
+                        if (buttonConfig.style) {
+                            btn.classList.add(`button-${buttonConfig.style}`);
+                        }
+                        
+                        // Обработка действия
+                        if (buttonConfig.action) {
+                            btn.onclick = function() {
+                                executeButtonAction(buttonConfig.action);
+                            };
+                        }
+                    } else {
+                        // Резервный вариант для обратной совместимости
+                        btn.textContent = button.text || 'Кнопка';
+                        if (button.action) {
+                            btn.onclick = function() {
+                                executeButtonAction(button.action);
+                            };
+                        }
+                    }
+                    
+                    buttonsContainer.appendChild(btn);
+                });
+                
+                chatMessages.appendChild(buttonsContainer);
+                scrollToBottom();
+                return true;
+            }
+            return false;
+        }
+
+        // Универсальная функция выполнения действий кнопок
+        function executeButtonAction(action) {
+            console.log('Выполняем действие:', action);
+            
+            try {
+                // Разбираем действие на функцию и аргументы
+                if (action.includes('(') && action.includes(')')) {
+                    const functionName = action.split('(')[0];
+                    const argsString = action.match(/\((.*)\)/)[1];
+                    
+                    switch(functionName) {
+                        case 'startFinancialAnalysis':
+                            startFinancialAnalysis();
+                            break;
+                        case 'startResumeCreation':
+                            startResumeCreation();
+                            break;
+                        case 'startJobSearch':
+                            startJobSearch();
+                            break;
+                        case 'startInterviewPrep':
+                            startInterviewPrep();
+                            break;
+                        case 'sendPaymentInfoRequest':
+                            sendPaymentInfoRequest();
+                            break;
+                        case 'sendBalanceRequest':
+                            sendBalanceRequest();
+                            break;
+                        case 'showFinancialTopic':
+                            const topicNumber = parseInt(argsString);
+                            showFinancialTopic(topicNumber);
+                            break;
+                        case 'showAboutBot':
+                            showAboutBot();
+                            break;
+                        default:
+                            sendCommand(action);
+                    }
+                } else {
+                    // Простые команды без аргументов
+                    sendCommand(action);
+                }
+            } catch (error) {
+                console.error('Ошибка выполнения действия:', error, action);
+                sendCommand(action); // Пробуем отправить как команду
+            }
+        }
+
+        // Добавьте эти функции в раздел с другими функциями
+        function sendPaymentInfoRequest() {
+            addMessage("💳 Информация о платежах", true);
+            sendToServer('message', 'платежи');
+        }
+
+        function sendBalanceRequest() {
+            addMessage("📊 Баланс", true);
+            sendToServer('message', 'баланс');
+        }
+
+        // Убедитесь, что все функции команд существуют
+        function startResumeCreation() {
+            sendCommand('start_resume');
+        }
+
+        function startJobSearch() {
+            sendCommand('start_job_search');
+        }
+
+        function startInterviewPrep() {
+            sendCommand('start_interview_prep');
+        }
+
+        function startFinancialAnalysis() {
+            sendCommand('financial_analysis');
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (message === '') return;
+            
+            addMessage(message, true);
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            
+            sendToServer('message', message);
+        }
+        
+        function sendCommand(command) {
+            addMessage(`Команда: ${getCommandText(command)}`, true);
+            sendToServer('command', command);
+        }
+        
+        function getCommandText(command) {
+            const commands = {
+                'about': 'О помощнике',
+                'help': 'Помощь',
+                'start_resume': 'Создание резюме',
+                'start_job_search': 'Поиск работы', 
+                'start_interview_prep': 'Подготовка к собеседованию'
+            };
+            return commands[command] || command;
+        }
+        
+        function addMessage(text, isUser = false, buttons = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+            
+            const time = new Date().toLocaleTimeString([], { 
+                hour: '2-digit', minute: '2-digit' 
+            });
+            
+            // Защита от нестроковых значений
+            if (typeof text !== 'string') {
+                console.warn('addMessage: text is not string, converting:', text);
+                text = String(text);
+            }
+            
+            let formattedText = formatText(text);
+            
+            messageDiv.innerHTML = `
+                ${formattedText}
+                <div class="message-time">${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Прокручиваем сразу после добавления сообщения
+            scrollToBottom();
+            
+            if (buttons) {
+                setTimeout(() => {
+                    addButtonsAfterMessage(buttons);
+                }, 100);
+            }
+            
+            setTimeout(() => {
+                initCollapsibles();
+                scrollToBottom();
+            }, 150);
+        }
+
+        function showFinancialTopic(topicNumber) {
+            let message = '';
+            let answer = '';
+            
+            switch (topicNumber) { 
+                case 1:
+                    message = `Самозанятость`;
+                    answer = `
+                        Самозанятый  — физическое лицо, которое работает на себя легально, без найма сотрудников, получающий доход от деятельности.<br>
+                        ${createCollapsible(' Документы для оформления', 
+                        `    1. Гражданство РФ или стран ЕАЭС
+                            2. Паспорт
+                            3. Банковская карта
+                        `)}
+                        ${createCollapsible(' Налог на доход', 
+                        `   4% - с доходов от физлиц
+                            6% - с доходов от ИП и юрлиц
+                        `)}
+                        ${createCollapsible(' Оформление статуса', 
+                        `    Через приложение «Мой налог»:
+                            1. Скачайте приложение
+                            2. Зарегистрируйте аккаунт
+                            3. Подтвердите регистрацию
+                            4. Выберите регион
+                            Ссылки:
+                            - <a href="https://www.rustore.ru/catalog/app/com.gnivts.selfemployed?mt_link_id=rpn0r1&rsm=1&mt_sub1=prostore&mt_sub2=moinalogreview">RuStore</a>
+                            - <a href="https://play.google.com/store/apps/details?id=com.gnivts.selfemployed&hl=ru">Google Play</a>
+                            - <a href="https://apps.apple.com/ru/app/%D0%BC%D0%BE%D0%B9-%D0%BD%D0%B0%D0%BB%D0%BE%D0%B3/id1437518854">App Store</a>
+                        `)}
+                    `;
+                    break;
+                case 2:
+                    message = `Социальный контракт`;
+                    answer = `${createCollapsible('Виды социальных контрактов', 
+                        `   1. Профессиональная подготовка, переподготовка и трудоустройство.
+                            2. Финансовая поддержка на открытие бизнеса.
+                            3. Оплата образовательных курсов, приобретение товаров первой необходимости и т.п.`)}
+                        ${createCollapsible('Документы для заключения социального контракта', 
+                        `   1. Заявление.
+                            2. Документ, удостоверяющий личность заявителя (паспорт).
+                            3. Документы, подтверждающие состав семьи (например, свидетельства о рождении детей).
+                            4. Справки о доходах членов семьи за предшествующие месяцы.
+                            5. Дополнительные документы в зависимости от вида мероприятия (например, бизнес-план при открытии ИП).`)}
+                        ${createCollapsible('Куда обратиться для оформления социального контракта?', 
+                        `   Для подачи заявления на оформление социального контракта необходимо обратиться в территориальные органы социальной защиты населения по месту жительства или пребывания. В некоторых регионах возможно обращение через портал государственных услуг («Госуслуги»).
+                            <a href="https://disk.yandex.ru/i/OKUqkyR69l7Euw" download="primer-zayavleniya.docx">Скачайте шаблон</a>`)}
+                        ${createCollapsible('<span class="section-title">Кто имеет право на получение социального контракта?</span>', 
+                        `   Право на заключение социального контракта имеют:
+                            - Граждане РФ, постоянно проживающие на территорию Российской Федерации.
+                            - Семьи и отдельные граждане, признанные нуждающимися в связи с низким уровнем дохода ниже прожиточного минимума.`)}`;
+                    break;
+                case 3:
+                    message = `Декретный отпуск`;
+                    answer = `${createCollapsible('Как оплатить обязательства в Сбере?', 
+                        `<a onclick=showFinancialTopic(10); return false;>Сервис «Помощь Близкому» СберОнлайн</a>`
+                    )}
+                        ${createCollapsible('Полезные интернет-ресурсы', 
+                        `   <a href="https://nalog.gov.ru">Налоговый вычет по ипотеке</a>
+                            <a href="https://sfr.gov.ru">Социальные выплаты при сниженном доходе</a>
+                        `)}
+                    `;
+                    break;
+                case 4:
+                    message = `Длительный больничный`;
+                    answer = `${createCollapsible('Как оплатить обязательства в Сбере?', 
+                        `<a onclick=showFinancialTopic(10); return false;>Сервис «Помощь Близкому» СберОнлайн</a>`
+                    )}
+                        ${createCollapsible('Полезные интернет-ресурсы', 
+                        `   <a href="https://sbebankins.ru">Страхование кредитов/здоровья</a>
+                            <a href="https://nalog.gov.ru">Налоговый вычет по ипотеке</a>
+                            <a href="https://sfr.gov.ru">Социальные выплаты при сниженном доходе</a>
+                        `)}
+                    `;
+                    break;
+                case 5:
+                    message = `Срочная служба`;
+                    answer = `${createCollapsible('Как оплатить обязательства в Сбере?', 
+                        `<a onclick=showFinancialTopic(10); return false;>Сервис «Помощь Близкому» СберОнлайн</a>`
+                    )}
+                    ${createCollapsible('Полезные интернет-ресурсы', 
+                        `   - <a href="https://mil.ru">Сайт Министерства обороны РФ</a>
+                            - <a href="https://cbr.ru">Информационная система Банка России</a>
+                            - <a href="https://kadis.ru">Федеральный закон № 53-ФЗ «О воинской обязанности и военной службе»</a>
+                        `)}
+                    `;
+                    break;
+                case 6:
+                    message = `Центр занятости`;
+                    answer = `
+                        ${createCollapsible('Документы для постановки на учет', 
+                        `   1. Паспорт гражданина РФ (или документ, удостоверяющий личность).
+                            2. Трудовая книжка (если имеется опыт работы).
+                            3. Документы об образовании (аттестат, диплом и др.).
+                            4. ИНН (идентификационный номер налогоплательщика).
+                            5. Страховое свидетельство обязательного пенсионного страхования (СНИЛС).
+                            6. Справка о среднем заработке за последние три месяца** (для расчета пособия по безработице). Если ранее не работали официально, справка не требуется.
+                        `)}
+                        ${createCollapsible('Как встать на учет в Центр Занятости', 
+                        `   1. Зарегистрируйтесь онлайн на портале государственных услуг ("Госуслуги").
+                               - Перейдите на <a href="https://www.gosuslugi.ru">портал государственных услуг</a>.
+                               - Найдите услугу "Постановка на учет в качестве безработного".
+                               - Заполните форму, прикрепив сканы необходимых документов.
+                            2. Посещение Центра занятости. После подачи документов онлайн или лично обратитесь в ближайшее отделение службы занятости вашего региона. Адрес ближайшего центра можно также найти на сайте Госуслуг или региональных ресурсов служб занятости.
+                        `)}
+                        ${createCollapsible('Получение пособия по безработице', 
+                        ` Pазмер выплаты зависит от среднего заработка на предыдущем месте работы и трудового стажа. Безработным впервые пособие выплачивается исходя из минимального размера оплаты труда.`)}
+                        ${createCollapsible('Полезные интернет-ресурсы',
+                        `- <a href="https://www.gosuslugi.ru/">Портал Государственных Услуг</a>
+                        - <a href="https://trudvsem.ru/">Федеральная служба занятости населения РФ</a>`
+            )}`;
+                    break;
+                case 7:
+                    message = `СберЗдоровье`;
+                    answer = `СберЗдоровье — это медицинская экосистема Сбербанка, объединяющая широкий спектр медицинских услуг и сервисов.<br>
+                        ${createCollapsible('Широкий выбор медицинских учреждений', 
+                        `   - Доступ к тысячам клиник и медицинских центров по всей России, что позволяет выбрать удобное расположение и подходящее медицинское учреждение.
+                            - Возможность записи к специалистам широкого профиля, включая узких специалистов и диагностические центры.
+                            - Удобная оплата медицинских услуг прямо через приложение Сбербанк Онлайн.
+                            - Специальные программы лояльности и скидки для пользователей банковских продуктов Сбербанка.
+                        `)}
+                        ${createCollapsible('Дополнительные сервисы', 
+                        `   - Сервис проверки симптомов, позволяющий оценить состояние здоровья перед обращением к специалисту.
+                            - Информация о лекарственных препаратах и рекомендациях по лечению.
+                            - Напоминания о профилактических осмотрах и прививках.
+                        `)}
+                        <a href="https://sberhealth.ru/">Ссылка на ресурс</a>
+                    `;
+                    break;
+                case 8:
+                    message = `СберПрайм`;
+                    answer = `СберПрайм — это премиальная подписка от Сбербанка, предоставляющая эксклюзивные возможности и дополнительные услуги, специально разработанные для повышения комфорта и удобства клиентов.
+                        
+                        ${createCollapsible('Экономия и выгода', 
+                        `   1. Условия, позволяющие получать товары и услуги по сниженным ценам.
+                            2. Бесплатная курьерская доставка покупок из маркетплейсов и магазинов-партнёров.
+                            3. Расширенный доступ к продуктам и услугам Сбербанка, таким как страховые продукты, банковские услуги и инвестиции.
+                        `)}
+                        ${createCollapsible('Эксклюзивный контент и развлечения', 
+                        `   - Доступ к фильмам, сериалам и музыкальным композициям через экосистемы Сбера.
+                            - Возможности участия в закрытых мероприятиях и акциях, организованных Сбером.
+                        `)}
+                        ${createCollapsible('Как работает СберПрайм?', 
+                        `    Для начала достаточно оформить подписку через мобильное приложение Сбербанк Онлайн или сайт. После активации подписчик сразу может пользоваться всеми предлагаемыми возможностями.
+                        `)}
+                        <a href="https://www.sberbank.com/sberprime">Ссылка на ресурс</a>
+                    `;
+                    break;
+                case 9:
+                    message = `СберПраво`;
+                    answer = `СберПраво — это юридический сервис от Сбербанка, предназначенный для предоставления профессиональной юридической помощи физическим лицам и бизнесу.
+                        
+                        ${createCollapsible('Ключевые преимущества СберПрава', 
+                        `   Профессиональная помощь
+                            1. Команда профессионалов готова оказать консультацию по различным вопросам права, будь то семейные дела, трудовые споры, защита прав потребителей или корпоративные вопросы.
+                            2. Юристы предоставляют всестороннюю оценку ситуации и предлагают оптимальное решение проблемы.
+                        `)}
+                        ${createCollapsible('Удобство и простота использования', 
+                        `   - Клиенты могут получить консультацию юриста в любое удобное время, используя мобильное приложение или веб-сайт.
+                            - Минимальные требования к подготовке документов и подробностям дела позволяют быстро начать работу с юристом.
+                        `)}
+                        <a href="https://sberpravo.ru/">Ссылка на ресурс</a>
+                    `;
+                    break;
+                case 10:
+                    message = `Помощь близкому`;
+                    answer = `
+                        Сервис <strong>«Помощь близкому»</strong> Сбербанка позволяет дистанционно помогать своим близким людям, особенно пожилым родственникам или тем, кому сложно самостоятельно пользоваться банковскими услугами онлайн.
+                        
+                        ${createCollapsible('Основные возможности сервиса', 
+                        `   - Удалённое оформление банковских продуктов и услуг (например, открытие вклада).
+                            - Возможность перевода денег с вашего счёта на счёт другого лица без посещения банка.
+                            - Контроль операций близкого человека, доступ к истории платежей и уведомлений о движении средств.
+                            - Полезная поддержка пожилых родственников или тех, кто не уверенно пользуется современными технологиями.
+                        `)}
+                        ${createCollapsible('Когда полезно использовать этот сервис?',
+                        `   Наиболее востребован сервис среди семей, где пожилые родственники живут отдельно или испытывают трудности с использованием современных технологий. Услуга помогает избежать лишней нагрузки и беспокойства, обеспечивая комфортное взаимодействие с банком для близких.
+                        `)}
+                        ${createCollapsible('Как оформить услугу?', 
+                        `   <strong>Шаг 1: Подготовка документов</strong>
+                            Для оформления услуги понадобится ваш паспорт гражданина РФ и документ близкого человека.
+                            
+                            <strong>Шаг 2: Оформление доверенности</strong>
+                            Можно обратиться в ближайшее отделение Сбербанка, где сотрудники помогут правильно составить заявление и договор поручения. Для оформления понадобятся ваши личные данные и реквизиты счета близкого человека.
+                            
+                            <strong>Шаг 3: Активация услуги</strong>
+                            После подачи заявления сотрудник банка проверит всю необходимую информацию и активирует сервис. Обычно процедура занимает несколько рабочих дней.
+                        `)}
+                        <a href="https://www.sberbank.ru/ru/person/credits/money/podderzhi">Вот ссылка на ресурс</a>
+                    `;
+                    break;
+                case 12:
+                    message = `СберСтрахование`;
+                    answer = `
+                        ${createCollapsible('Какие виды страхования предлагает СберСтрахование?', 
+                        `   <strong>1. Страхование жизни и здоровья</strong>
+                            Это одно из ключевых направлений деятельности компании. Оно включает в себя страхование на случай смерти, инвалидности, болезни или несчастного случая.
+                            
+                            <strong>2. Имущественное страхование</strong>
+                            Здесь представлены программы защиты недвижимости, автомобилей и другого личного имущества.
+                            
+                            <strong>3. Пенсионное страхование</strong>
+                            Эта программа позволяет гражданам заранее позаботиться о своем будущем пенсионном обеспечении.
+                            
+                            <strong>4. Страхование туристов</strong>
+                            При поездках за границу и внутри страны туристы могут приобрести страховку, покрывающую риски медицинских расходов, потери багажа, отмены поездок и прочие возможные неприятности.
+                            
+                            <strong>5. Финансовое страхование</strong>
+                            Предлагаются программы страхования вкладов и кредитов, позволяющие защитить денежные средства на случай проблем с банками или задержек выплат по кредитам.
+                        `)}
+                        ${createCollapsible('Преимущества сотрудничества со СберСтрахованием', 
+                        `   - Широкая линейка страховых продуктов, позволяющая выбрать подходящий вариант исходя из индивидуальных потребностей.
+                            - Высокий уровень надежности благодаря поддержке материнского банка — Сбербанка.
+                            - Удобство оформления полисов онлайн через мобильное приложение Сбербанк Онлайн или сайт компании.
+                            - Качественный сервис обслуживания клиентов, включая консультации по выбору оптимальных условий страхования.
+                            - Возможности инвестирования и накопления денежных средств наряду с защитой здоровья и имущества.
+                        `)}
+                        <a href="https://sberbankins.ru/">Вот ссылка на ресурс</a>
+                    `;
+                    break;
+                case 14:
+                    message = `Налоговый вычет`;
+                    answer = `
+                        ${createCollapsible( `Стандартные вычеты:`,
+                        `На детей - 1400 р. (1-й ребенок), 2800 р. (2-й ребенок), 6000 р. (3-й и последующие) в месяц
+                        ГТО  - до 18 000 р. в год`)}
+                        ${createCollapsible(`Социальные - до 150 тыс. руб.`,
+                        `- На лечение (оплата мед. услуг, покупка дорогостоящих лекарств)
+                            - На обучение (своё, близких родственников, детей)
+                            - На спорт (оплату спортивных занятий вас и ваших детей)
+                        `)}
+                        ${createCollapsible(`Имущественные:`,
+                            `- При покупке или строительстве недвижимости (дом, квартира) - до 260 тыс. р.
+                            - По выплачиваемым процентам по ипотеке - до 390 тыс. р.
+                    `)}
+                        ${createCollapsible(`1. Подготовьте документы`,
+                            `Паспорт, справка 2-НДФЛ, ИНН, Подтверждающие документы(договор купли продажи, договор оказания услуг, договор оказания спортивных услуг, чеки об уплате и т.д.), декларация 3-НДФЛ, электронная подпись<a href='https://www.gosuslugi.ru/help/faq/subcategory/about_gosuslugi/state_key'>(через приложение Госключ)</a>
+                    `)}
+                        ${createCollapsible(`2. Подайте заявление на сайте Госуслуг`,
+                            `<a href='https://www.gosuslugi.ru/'>Госуслуги</a>
+                            Раздел "Штрафы и налоги", далее "Подача декларции 3-НДФЛ", далее "Получить вычет"
+                    `)}
+                        ${createCollapsible(`3. Ожидайте проверки и получите налоговый вычет`,
+                            `Срок рассмотрения 3 мес.
+                            Деньги поступят на счёт в течении месяца после проверки декларации
+                    `)}
+                    `;
+                    break;
+                default:
+                    message = `Финансовая тема ${topicNumber}`;
+                    answer = `Информация по выбранной теме будет доступна в ближайшее время.`;
+            }
+            
+            // Сначала добавляем сообщение пользователя
+            addMessage(message, true);
+            
+            // Затем добавляем ответ бота с сворачиваемыми блоками
+            setTimeout(() => {
+                addMessage(answer, false);
+            }, 500);
+        }        // Функция для самозанятости - сначала выводит сообщение пользователя, потом отправляет запрос
+        
+        function showSelfEmployment() {
+                    // Сначала добавляем сообщение от пользователя
+            addMessage("Самозанятость", true);
+                    
+            // Затем отправляем запрос на сервер
+            setTimeout(() => {
+            sendToServer('message', 'Самозанятость');
+            }, 100);
+        }
+
+        function sendToServer(type, content) {
+            showTypingIndicator();
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    content: content
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideTypingIndicator();
+                
+                if (data.status === 'success') {
+                    if (Array.isArray(data.response)) {
+                        data.response.forEach(response => {
+                            addMessage(response, false);
+                        });
+                    } else {
+                        addMessage(data.response, false);
+                    }
+                    
+                    if (data.buttons && data.buttons.length > 0) {
+                        setTimeout(() => {
+                            addButtonsAfterMessage(data.buttons);
+                        }, 300);
+                    }
+                } else {
+                    addMessage('Ошибка: ' + data.response, false);
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                console.error('Ошибка:', error);
+                addMessage(`Ошибка соединения с сервером.`, false);
+            });
+        }
+        
+        function startResumeCreation() {
+            sendCommand('start_resume');
+        }
+        
+        function startFinancialAnalysis() {
+            showLoader();
+            
+            fetch('/api/financial-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                if (data.status === 'success') {
+                    addMessage(data.response, false);
+                } else {
+                    addMessage('Ошибка: ' + data.response, false);
+                }
+            })
+            .catch(error => {
+                hideLoader();
+                console.error('Ошибка:', error);
+                addMessage('Ошибка при финансовом анализе.', false);
+            });
+        }
+
+        function showAboutBot() {
+            sendCommand('about');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            scrollToBottom();
+        }
+        
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+            scrollToBottom();
+        }
+        
+        function showLoader() {
+            document.getElementById('loader').style.display = 'block';
+            scrollToBottom();
+        }
+        
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+            scrollToBottom();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Остальной JavaScript код (уведомления, меню) остается без изменений
+        let notifications = [];
+        let notificationCheckInterval;
+
+        function setupNotificationSystem() {
+            const notificationBtn = document.getElementById('notificationBtn');
+            const notificationPanel = document.getElementById('notificationPanel');
+            const closeNotifications = document.getElementById('closeNotifications');
+            const overlay = document.getElementById('overlay');
+
+            notificationBtn.addEventListener('click', openNotifications);
+
+            closeNotifications.addEventListener('click', closeNotificationsPanel);
+            overlay.addEventListener('click', closeNotificationsPanel);
+
+            loadNotifications();
+
+            notificationCheckInterval = setInterval(loadNotifications, 50000);
+        }
+
+        function openNotifications() {
+            const notificationPanel = document.getElementById('notificationPanel');
+            const overlay = document.getElementById('overlay');
+            
+            notificationPanel.classList.add('open');
+            overlay.classList.add('active');
+
+            markNotificationsAsRead();
+        }
+
+        function closeNotificationsPanel() {
+            const notificationPanel = document.getElementById('notificationPanel');
+            const overlay = document.getElementById('overlay');
+            
+            notificationPanel.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    notifications = data.notifications;
+                    updateNotificationUI();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки уведомлений:', error);
+            }
+        }
+
+        function updateNotificationUI() {
+            const notificationList = document.getElementById('notificationList');
+            const notificationBadge = document.getElementById('notificationBadge');
+            
+            const unreadCount = notifications.filter(n => !n.read).length;
+            if (unreadCount > 0) {
+                notificationBadge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                notificationBadge.style.display = 'flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+            
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="no-notifications">Уведомлений нет</div>';
+            } else {
+                notificationList.innerHTML = notifications.map(notification => `
+                    <div class="notification-item ${notification.read ? '' : 'unread'} ${notification.priority || 'low'}">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-message">${notification.message}</div>
+                        <div class="notification-meta">
+                            <span class="notification-date">${formatNotificationDate(notification.created_at)}</span>
+                            ${!notification.read ? `<button class="mark-read-btn" onclick="markNotificationRead(${notification.id})">✓</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function markNotificationRead(notificationId) {
+            try {
+                await fetch(`/api/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const notification = notifications.find(n => n.id === notificationId);
+                if (notification) {
+                    notification.read = true;
+                }
+                updateNotificationUI();
+            } catch (error) {
+                console.error('Ошибка отметки уведомления как прочитанного:', error);
+            }
+        }
+        
+        function formatNotificationDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'только что';
+            if (diffMins < 60) return `${diffMins} мин. назад`;
+            if (diffHours < 24) return `${diffHours} ч. назад`;
+            if (diffDays < 7) return `${diffDays} д. назад`;
+            
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function setupMenuPanel() {
+            const menuBtn = document.getElementById('menuBtn');
+            const menuPanel = document.getElementById('menuPanel');
+            const closeMenu = document.getElementById('closeMenu');
+            const overlay = document.getElementById('overlay');
+
+            menuBtn.addEventListener('click', openMenu);
+
+            closeMenu.addEventListener('click', closeMenuPanel);
+            
+            overlay.addEventListener('click', closeMenuPanel);
+
+            populateMenu();
+        }
+
+        function openMenu() {
+            const menuPanel = document.getElementById('menuPanel');
+            const overlay = document.getElementById('overlay');
+            
+            menuPanel.classList.add('open');
+            overlay.classList.add('active');
+        }
+
+        function closeMenuPanel() {
+            const menuPanel = document.getElementById('menuPanel');
+            const overlay = document.getElementById('overlay');
+            
+            menuPanel.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        function populateMenu() {
+            const menuContent = document.getElementById('menuContent');
+            
+            const menuButtons = [
+                { icon: '🏢', text: 'Центр занятости', action: () => showFinancialTopic(6) },
+                { icon: '📝', text: 'Создание резюме', action: () => startResumeCreation() },
+                { icon: '🔍', text: 'Поиск работы', action: () => startJobSearch() },
+                { icon: '💼', text: 'Подготовка к собеседованию', action: () => startInterviewPrep() },
+                { icon: '💼', text: 'Самозанятость', action: () => showFinancialTopic(1) },
+                { icon: '📄', text: 'Социальный контракт', action: () => showFinancialTopic(2) },
+                { icon: '🧾', text: 'Налоговый вычет', action: () => showFinancialTopic(14) },
+                { icon: '🧾', text: 'Декретный отпуск', action: () => showFinancialTopic(3) },
+                { icon: '🧾', text: 'Длительный больничный', action: () => showFinancialTopic(4) },
+                { icon: '🧾', text: 'Срочная служба', action: () => showFinancialTopic(5) },
+                { icon: '🧾', text: 'Сбер здоровье', action: () => showFinancialTopic(7) },
+                { icon: '🧾', text: 'Сбер прайм', action: () => showFinancialTopic(8) },
+                { icon: '🧾', text: 'Сбер право', action: () => showFinancialTopic(9) },
+                { icon: '🧾', text: 'Сбер страхование', action: () => showFinancialTopic(12) },
+                { icon: '🧾', text: 'Помощь близкому', action: () => showFinancialTopic(10) },
+                { icon: '🕶️', text: 'Финансовый анализ', action: () => startFinancialAnalysis() },
+                { icon: '🤖', text: 'О боте', action: () => showAboutBot() }
+            ];
+
+            menuContent.innerHTML = '';
+            menuButtons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.className = 'menu-btn';
+                btn.innerHTML = `
+                    <span class="menu-btn-icon">${button.icon}</span>
+                    <span>${button.text}</span>
+                `;
+                btn.onclick = function() {
+                    button.action();
+                    closeMenuPanel();
+                };
+                menuContent.appendChild(btn);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupNotificationSystem();
+            setupMenuPanel();
+            document.getElementById('userInput').focus();
+            
+            // Прокручиваем вниз при загрузке страницы
+            setTimeout(scrollToBottom, 200);
+        });
+    </script>
+</body>
+</html>
